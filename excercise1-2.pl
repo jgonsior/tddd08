@@ -1,11 +1,11 @@
 % path(X,Y,Z)
 % if there is a path from X to Y then it is the path Z
-path(X,Y,[X,Y]) :-
+path(X,Y,[]) :-
 	edge(X,Y).
 
-path(X,Y,[X,Z,Y,P]) :-
+path(X,Y,[Z|P]) :-
 	edge(X,Z),
-	path(Z,Y,[Z,P]).
+	path(Z,Y,P).
 
 % facts
 edge(a,b).
