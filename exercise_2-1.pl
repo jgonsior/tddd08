@@ -5,7 +5,7 @@ insertProperPlace(E, [C|I], O):-
     append([E], [C|I], O).
 
 % If it is not then we need to remove another element and try again.
-insertProperPlace(E, List, []):-
+insertProperPlace(E, List, [E]):-
     length(List, 0).
 
 insertProperPlace(E, [C|I], O):-
@@ -19,7 +19,7 @@ isort(Input, []):-
 
 isort([F|I], O):-
     %length(C, 1), append(C, D, I), % Remove first element
-    sort(I, S), % Sort the list %TODO try with isort
+    isort(I, S), % Sort the list %TODO try with isort
     insertProperPlace(F, S, O). % insert the first element
 
 
