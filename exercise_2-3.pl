@@ -59,16 +59,17 @@ set(I, E) :-
         set(Y, ValY),
         Output is ValX-ValY.
 
-setAll(A):-
-    length(A, 0).
+/*
+bindAll([]).
 
-setAll([[FirstIdentifier|[FirstNumber]]|Rest]):-
+bindAll([[FirstIdentifier|[FirstNumber]]|Rest]):-
     set(FirstIdentifier, FirstNumber),
-    setAll(Rest).
+    bindAll(Rest).
+*/
 
-% execute([[a,4],[b,3],[d,9]])
+% execute([[a,4],[b,3],[d,9]], set(c,5), [[a,4],[b,3],[d,9], [c,5]])
 execute(InitialBinding, Program, FinalBinding):-
-    setAll(intialBinding, Bindings).
+    
 
 
 id(a).
