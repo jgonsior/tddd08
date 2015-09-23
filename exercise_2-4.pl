@@ -4,14 +4,15 @@ union(A, B, Union):-
 
 intersectionLists([], B, []).
 intersectionLists(A, [], []).
-intersectionLists([], [], []).
 
 intersectionLists([A|As], B, [A|Intersection]):-
     member(A, B),
-    intersectionLists(As, B, Intersection).
+	delete(B,A,Bnew),
+    intersectionLists(As, Bnew, Intersection).
 
 intersectionLists([A|As], B, Intersection):-
-    not(member(A, B)),
+	length(A,1),
+	not(member(A, B)),
     intersectionLists(As, B, Intersection).
 
 sortList([], []).
@@ -19,8 +20,6 @@ sortList([A|As], B):-sort([A|As], B).
 sortList(A, [A]).
 
 intersection(A, B, Intersection):-
-    %sortList(A, ASorted),
-    %sort(B, BSorted),
     intersectionLists(A, B, Output),
     sort(Output, Intersection). % Remove duplicate elements
 
