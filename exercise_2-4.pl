@@ -3,7 +3,7 @@ union(A, B, Union):-
     sort(UnionList, Union). % To remove the duplicates
 
 intersectionLists([], B, []).
-intersectionLists(A, [], []).
+%intersectionLists(A, [], []).
 
 intersectionLists([A|As], B, [A|Intersection]):-
     member(A, B),
@@ -11,7 +11,7 @@ intersectionLists([A|As], B, [A|Intersection]):-
     intersectionLists(As, Bnew, Intersection).
 
 intersectionLists([A|As], B, Intersection):-
-	length(A,1),
+	not(length(B,0),
 	not(member(A, B)),
     intersectionLists(As, B, Intersection).
 
