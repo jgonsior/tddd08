@@ -2,10 +2,10 @@
 evaluate(InitialMemory, skip, InitialMemory).
 
 %evaluate(InitialMemory, Program, ResultingMemory)
-evaluateSet(OriginalMemory, [],  set(X,Expression),  [[X|Result]]):-
+evaluateSet(OriginalMemory, [],  set(X,Expression),  [[X,Result]]):-
 	evaluate_arithmetic_expression(OriginalMemory,Expression, Result).
 
-evaluateSet(OriginalMemory, [[X|Xs]|InitialMemory], set(X, Expression), [[X|Result]|InitialMemory]):-
+evaluateSet(OriginalMemory, [[X|Xs]|InitialMemory], set(X, Expression), [[X,Result]|InitialMemory]):-
 	evaluate_arithmetic_expression(OriginalMemory, Expression, Result).
 
 evaluateSet(OriginalMemory, [[Z, P]|InitialMemory], set(X, Expression), [[Z, P]|OutputMemory]) :-
@@ -26,15 +26,14 @@ evaluate(InitialMemory, if(X, Y, Z), OutputMemory) :-
 	evaluate_boolean_expression(InitialMemory, X, XBool),
 	evaluate(InitialMemory, if(XBool, Y, Z), OutputMemory).
 
-%while
-%evaluate(InitialMemory, while(X, Y), OutputMemory) :-
-%	evaluate(InitialMemory, if(X,seq(Y,while(X,Y)),skip), OutputMemory).
-%TODO while is not working - The rest should be fine
+%TODO while is not working - The rest seems to be fine
 evaluate(InitialMemory, while(X, Y), OutputMemory) :-
-    write(test), nl,
-	evaluate(InitialMemory, if(X,Y, skip),OutputMemory2)),
-	evaluate(OutputMemory2, while(X,Y),OutputMemory).
+	evaluate_boolean_expression(InitialMemory, X, true),
+	evaluate(InitialMemory, Y, OutputMemory2),
+	evaluate(OutputMemory2, while(X,Y), OutputMemory).
 
+evaluate(InitialMemory, while(X, Y), InitialMemory) :-
+		evaluate_boolean_expression(InitialMemory, X, false).
 %seq
 evaluate(InitialMemory, seq(X,Y), OutputMemory) :-
 	evaluate(InitialMemory, X, OutputMemory2),
@@ -80,3 +79,8 @@ evaluate_boolean_expression(Memory, X>Y, false):-
 	access(Memory, X, Xa),
 	access(Memory, Y, Ya),
 	not(Xa>Ya).
+
+% Test in the lab instructions :
+%evaluate([[x,3]], seq(set(id(y),1), while(id(x) > 1, seq(set(id(y), id(y) * id(x)), set(id(x), id(x) - 1)))), Out).
+% Without id
+%evaluate([[x,3]], seq(set(y,1), while(x > 1, seq(set(y, y * x), set(x, x - 1)))), Out
