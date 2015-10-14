@@ -16,7 +16,7 @@ factor --> term, [+], factor.
 factor --> term.
 term --> id.
 term --> num.
-id --> [X], {string(X)}.
+id --> [X], {atom(X)}.
 num --> [X], {number(X)}.
 
 %id --> [a].
