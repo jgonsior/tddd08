@@ -12,43 +12,61 @@ container(d,1,1).
 on(a,d).
 on(b,c).
 on(c,d).
-on(d,e).
-on(e,f).
-on(e,g).
+%on(d,e).
+%on(e,f).
+%on(e,g).
 
-% plan(HiredWorkers,TotalDuration, TotalCost)
-plan(HiredWorkers, TotalDuration, Totalcost).
-
-% unload(ListOfContainers, UnloadPlan)
-% unload [a,b,c], [[a,b], [c]]
-unload([], [[]]).
-unload([Container|ContainerList], [[Container|CurrentUnloading]|OtherUnloadings]) :-
-	checkIfOtherContainersUnloaded(Container, OtherUnloadings).
-
+tasks_starts2(Tasks, [S1,S2,S3,S4]) :-
+	Tasks = [task(S1, 2, _, 2,a),
+	         task(S2, 1, _, 4, b),
+	         task(S3, 2, _, 2, c),
+	         task(S4, 1, _, 1, d)].
+tasks_starts(Tasks) :-
+	findall(task(_,Time, _, Persons,Container), container(Container, Persons, Time), Tasks).	
 
 
-calculate(ContainerList,Plan,Price,Workers) :-
-	checkPlan(ContainerList, Plan).
+% seems not to work!
+get_a_start(Tasks, S) :-
+	member(task(S,_,_,_,_), Tasks).
 
-% checkPlan(Plan) -> needs to check if all containers from on() are being used
-% then needs to check if it is allowed to unload the containers that are in this plan --> the plan contains all the timestamps!
-% all container from the first unloading are only those, that have nothing on them
-% all container from the second unloading are only those, that have nothing on them or are unloaded in the first round
-checkPlan([], _).
-
-checkPlan([OneUnloading|OtherUnloadings], ContainersThatCanBeUsed) :-
-	checkIfOtherContainersUnloaded(OneUnloading, ContainersThatCanBeUsed),
-	append(OneUnloading, ContainersThatCanBeUsed, ContainersThatCanBeUsedNextTime),
-	checkPlan(OtherUnloadings, ContainersThatCanBeUsedNextTime).
+get_starts(Tasks, Starts) :-
+	findall(S, get_a_start(Tasks,S), Statrs).
 
 
-% checkIfOtherContainersUnloaded(ContainerList, ContainersThatCanBeUsed)
-% checkIfOtherContainersUnloaded([a], [b,c,e).
-% so all containers that are on top of a need to be in otherunloadings
-%
-checkIfOtherContainersUnloaded([Container|ContainerList], UnloadPlan) :-
+goaly(Tasks, Starts, Limit) :- 
+	tasks_starts(Tasks),
+	checkPlan(Tasks),
+	%get_starts(Tasks, Starts),
+	Starts ins 0..100, % Starts #> 3.
+	[Limit] ins 1..100,
+	once(labeling([max(Limit)],[Limit])),
+	cumulative(Tasks, [limit(Limit)]),
+	label(Starts).
+
+checkPlan([]).
+checkPlan([Task|Tasks]) :-
+	checkIfOtherContainersUnloaded(Task, Tasks),
+	checkPlan(Tasks).
+
+% checkIfOtherContainersUnloaded(Task, Tasks)
+% needs to check, if at the timeStamp at which this one container wants to be unloaded all other container that are on top of him are already unloaded
+
+checkIfOtherContainersUnloaded(task(Time,_,_,_,Container), Tasks) :-
 	onTop(Container, TopContainers),
-	sublist(TopContainers, UnloadPlan).
+	unloadedContainers(Tasks, Time-1, UnloadedContainers),
+	sublist(TopContainers, UnloadedContainers).
+
+
+% UnloadedContainers is a list of the container ids that are unloaded at the timestamp Time
+unloadedContainers(Tasks, Time, UnloadedContainers) :-
+	findall(Container, unloaded(Tasks, Container, Time), UnloadedContainers).
+
+unloaded([task(_, _, Endtime, _,Container)| Tasks], Container, Timestamp) :-
+	Timestamp >=Endtime .
+
+unloaded([task(_, _, Endtime, _,_)| Tasks], Container, Timestamp) :-
+	unloaded(Tasks, Container, Timestamp).
+
 
 %BUG -> result is being returned twice!
 % onTop(Container, OnTopContainerList) -> lists all containers that are on top of this container
@@ -72,3 +90,16 @@ sublist([], _).
 sublist([X|Xs], List2) :-
 	member(X, List2),
 	sublist(Xs, List2).
+
+
+% checkPlan(Plan) -> needs to check if all containers from on() are being used
+% then needs to check if it is allowed to unload the containers that are in this plan --> the plan contains all the timestamps!
+% all container from the first unloading are only those, that have nothing on them
+% all container from the second unloading are only those, that have nothing on them or are unloaded in the first round
+checkPlan([], _).
+
+checkPlan([OneUnloading|OtherUnloadings], ContainersThatCanBeUsed) :-
+	checkIfOtherContainersUnloaded(OneUnloading, ContainersThatCanBeUsed),
+	append(OneUnloading, ContainersThatCanBeUsed, ContainersThatCanBeUsedNextTime),
+	checkPlan(OtherUnloadings, ContainersThatCanBeUsedNextTime).
+
