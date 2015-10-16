@@ -3,32 +3,32 @@
 :-include('scanner.pl').
 :-include('exercise_2-3.pl').
 
-pgm --> cmd.
-pgm --> cmd, [;], pgm.
+pgm(X) --> cmd(X).
+pgm(seq(A,B)) --> cmd(A), [;], pgm(B).
 
-cmd --> [skip].
-cmd --> id , [:=], expr.
-cmd --> [if], bool, [then], pgm, [else], pgm, [fi].
-bool --> expr, [>], expr.
-expr --> factor, [*], expr.
-expr --> factor.
-factor --> term, [+], factor.
-factor --> term.
-term --> id.
-term --> num.
-id --> [X], {atom(X)}.
-num --> [X], {number(X)}.
+cmd(skip) --> [skip].
+cmd(set(A,B)) --> ident(A) , [:=], expr(B).
+cmd(if(A,B,C)) --> [if], bool(A), [then], pgm(B), [else], pgm(C), [fi].
+cmd(while(A,B)) --> [while], bool(A), [do], pgm(B), [od].
 
-%id --> [a].
-%id --> [b].
-%id --> [c].
-%id --> [d].
-%num --> [0].
-%num --> [1].
-%num --> [2].
-%num --> [3].
-%num --> [4].
-%num --> [5].
+bool(A > B) --> expr(A), [>], expr(B).
+bool(A >=  B) --> expr(A), [>=], expr(B).
+bool(A < B) --> expr(A), [<], expr(B).
+bool(A =< B) --> expr(A), [=<], expr(B). % ATTENTION! =< and >= :-)
+bool(A = B) --> expr(A), [=], expr(B).
+bool(A) --> expr(A).
+
+expr(A * B) --> factor(A), [*], expr(B).
+expr(A) --> factor(A).
+
+factor(A + B) --> term(A), [+], factor(B).
+factor(A) --> term(A).
+
+term(X) --> ident(X).
+term(X) --> numb(X).
+
+ident(id(X)) --> [id(X)], {atom(X)}.
+numb(num(X)) --> [num(X)], {number(X)}.
 
 
 run(In, String, Out) :-
@@ -36,5 +36,13 @@ run(In, String, Out) :-
 	parse(Tokens, AbstStx),
 	evaluate(In, AbstStx, Out).
 
+parse(Tokens,AbstStx) :-
+	pgm(AbstStx,Tokens, []).
 
-parse(Tokens, AbstStx).
+
+/* run it with:
+run([[id(x),num(3)]],
+"y:=1; z:=0; while x>z do z:=z+1; y:=y*z od",
+Res).
+
+*/

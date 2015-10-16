@@ -1,4 +1,4 @@
-%skip
+% skip
 evaluate(InitialMemory, skip, InitialMemory).
 
 %evaluate(InitialMemory, Program, ResultingMemory)
