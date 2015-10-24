@@ -44,10 +44,36 @@ run(Tasks, Starts, End) :-
 	domain(Ends, 1, 500),
 	domain([End], 1,500),
 	maximum(End, Ends),
+	restrictTasks(Tasks, OriginalTasks),
 	cumulative(Tasks, [limit(150)]),
 	append(Starts, [End], Vars),
-	labeling([minimize(End)], Vars),
-	checkPlan(Tasks, Tasks).
+	labeling([minimize(End)], Vars).
+
+
+% restrict the start times w.r.t. to the on top constraint
+restrictTasks([],_).
+restrictTasks([task(Start, Time, End, _, Container)|Tasks], OriginalTasks) :-
+	%start time of this task needs to be before end time of containers on which this one task is on top
+	onTop(Container, TopContainers),
+	getEndTimes(TopContainers, EndTimes, OriginalTasks),
+	restrictStartTime(Start, EndTimes).
+
+%returns a list of the endTimes for the containers from the first argument
+getEndTimes([],[],_).
+getEndTimes([Container|TopContainers], [End|EndTimes], OriginalTasks) :-
+	%find Container in OriginalTasks
+	getEndTime(Container, End, OriginalTasks).
+
+%returns the end time for one container
+getEndTime(Container, End, [task(_,End,_,Container) | OriginalTasks]).
+getEndTime(Container, End, [task(_,End,_,AnotherContainer)|OriginalTasks]) :-
+	Container \= AnotherContainer,
+	getEndTime(Container, End, OriginalTasks).
+
+restrictStartTime(Start, []).
+restrictStartTime(Start, [EndTime|Endtimes]) :-
+	Start #> Endtime.
+
 
 % checkPlan(Plan, Plan)
 % checks if a plan is possible regarding the container constraints w.r.t. the on/2 relation
