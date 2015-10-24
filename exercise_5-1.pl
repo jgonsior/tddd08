@@ -15,11 +15,18 @@ on(c,d).
 %on(e,g).
 
 % returns a list of tasks and a list of start times
-% possible bug: the list of start times contains different anonymous variables than the start times in the tasks list
 tasks_starts_ends(Tasks, Starts, Ends) :-
-	findall(task(_X,Time, _X+Time, Persons,Container), container(Container, Persons, Time), Tasks),
-	findall(_X, get_a_task(task(_X,_,_,_,_),Tasks), Starts),
-	findall(_X, get_a_task(task(_,_,_X,_,_),Tasks), Ends).
+	%list of containers
+	findall([Time, Persons,Container], container(Container, Persons, Time), Cons),
+	length(Cons, ContainerCount),
+	%list of start time
+	length(Starts, ContainerCount),
+	%list of end times
+	length(Ends, ContainerCount),
+
+	%create tasks
+	create_tasks(Cons, Starts, Ends, Tasks).
+
 
 % returns one task, useful for creating the Starts list for tasks_stars
 get_a_task(Task, [Task|Tasks]).
