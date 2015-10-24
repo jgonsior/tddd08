@@ -32,19 +32,13 @@ create_tasks([],[],[],[]).
 create_tasks([[Time, Persons, Container]|Cons], [Start|Starts], [End|Ends], [task(Start, Time, End, Persons, Container)|Tasks]) :-
 	create_tasks(Cons, Starts, Ends, Tasks).
 
-% returns one task, useful for creating the Starts list for tasks_stars
-get_a_task(Task, [Task|Tasks]).
-get_a_task(Task, [_|Tasks]) :-
-	get_a_task(Task, Tasks).
-
-
 run(Tasks, Starts, End) :- 
 	tasks_starts_ends(Tasks, Starts, Ends),
 	domain(Starts, 1, 300),
 	domain(Ends, 1, 500),
 	domain([End], 1,500),
+	restrictTasks(Tasks, Tasks),
 	maximum(End, Ends),
-	restrictTasks(Tasks, OriginalTasks),
 	cumulative(Tasks, [limit(150)]),
 	append(Starts, [End], Vars),
 	labeling([minimize(End)], Vars).
@@ -56,23 +50,28 @@ restrictTasks([task(Start, Time, End, _, Container)|Tasks], OriginalTasks) :-
 	%start time of this task needs to be before end time of containers on which this one task is on top
 	onTop(Container, TopContainers),
 	getEndTimes(TopContainers, EndTimes, OriginalTasks),
-	restrictStartTime(Start, EndTimes).
+	restrictStartTime(Start, EndTimes),
+	restrictTasks(Tasks, OriginalTasks).
 
 %returns a list of the endTimes for the containers from the first argument
 getEndTimes([],[],_).
-getEndTimes([Container|TopContainers], [End|EndTimes], OriginalTasks) :-
+getEndTimes([Container|TopContainers], EndTimes, OriginalTasks) :-
 	%find Container in OriginalTasks
-	getEndTime(Container, End, OriginalTasks).
+	getEndTime(Container, End, OriginalTasks),
+	getEndTimes(TopContainers, EndTimes2, OriginalTasks),
+	append([End], EndTimes2, EndTimes).
+
 
 %returns the end time for one container
-getEndTime(Container, End, [task(_,End,_,Container) | OriginalTasks]).
-getEndTime(Container, End, [task(_,End,_,AnotherContainer)|OriginalTasks]) :-
+getEndTime(Container, End, [task(_,_,End,_,Container) | OriginalTasks]).
+getEndTime(Container, End, [task(_,_,End,_,AnotherContainer)|OriginalTasks]) :-
 	Container \= AnotherContainer,
 	getEndTime(Container, End, OriginalTasks).
 
 restrictStartTime(Start, []).
 restrictStartTime(Start, [EndTime|Endtimes]) :-
-	Start #> Endtime.
+	Start #> Endtime,
+	restrictStartTime(Start, Endtimes).
 
 
 % checkPlan(Plan, Plan)
