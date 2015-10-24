@@ -28,6 +28,10 @@ tasks_starts_ends(Tasks, Starts, Ends) :-
 	create_tasks(Cons, Starts, Ends, Tasks).
 
 
+create_tasks([],[],[],[]).
+create_tasks([[Time, Persons, Container]|Cons], [Start|Starts], [End|Ends], [task(Start, Time, End, Persons, Container)|Tasks]) :-
+	create_tasks(Cons, Starts, Ends, Tasks).
+
 % returns one task, useful for creating the Starts list for tasks_stars
 get_a_task(Task, [Task|Tasks]).
 get_a_task(Task, [_|Tasks]) :-
