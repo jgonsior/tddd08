@@ -29,7 +29,7 @@ tasks_starts_ends(Tasks, Starts, Ends) :-
 
 
 create_tasks([],[],[],[]).
-create_tasks([[Time, Persons, Container]|Cons], [Start|Starts], [End|Ends], [task(Start, Time, End, Persons, Container)|Tasks]) :-
+create_tasks([[Time, Persons, Container]|Cons], [Start|Starts], [End|Ends], [task(Start, Time, End, Persons, 1)|Tasks]) :-
 	create_tasks(Cons, Starts, Ends, Tasks).
 
 % returns one task, useful for creating the Starts list for tasks_stars
@@ -40,14 +40,14 @@ get_a_task(Task, [_|Tasks]) :-
 
 run(Tasks, Starts, End) :- 
 	tasks_starts_ends(Tasks, Starts, Ends),
-	domain(Starts, 1, 30),
-	domain(Ends, 1, 50),
-	domain([End], 1,50),
+	domain(Starts, 1, 300),
+	domain(Ends, 1, 500),
+	domain([End], 1,500),
 	maximum(End, Ends),
-	checkPlan(Tasks, Tasks),
-	cumulative(Tasks, [limit(15)]),
+	cumulative(Tasks, [limit(150)]),
 	append(Starts, [End], Vars),
-	labeling([minimize(End)], Vars).
+	labeling([minimize(End)], Vars),
+	checkPlan(Tasks, Tasks).
 
 % checkPlan(Plan, Plan)
 % checks if a plan is possible regarding the container constraints w.r.t. the on/2 relation
@@ -79,7 +79,7 @@ unloaded([task(_, _, Endtime, _,_)| Tasks], Container, Timestamp) :-
 % returns a list of Containers that are on top of a Container
 onTop(Container, []) :-
 	%if there is no container on top of it
-	not(on(_,Container)).
+	\+ on(_,Container).
 
 onTop(Container, TopContainers) :-
 	on(_,Container), % bug: matches multiple times -> the same result is being returned twice or more times
