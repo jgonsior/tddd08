@@ -1,15 +1,15 @@
 :- use_module(library(clpfd)).
 
 % container(B,M,D) Container B needs M persons to be unloaded, and the unloading takes D amount of time
-container(a,2,2).
-container(b,4,1).
-container(c,2,2).
-container(d,1,1).
+container(10,2,2).
+container(20,4,1).
+container(30,2,2).
+container(40,1,1).
 
 % on(A,B) container A is on B
-on(a,d).
-on(b,c).
-on(c,d).
+on(10,40).
+on(20,30).
+on(30,40).
 %on(d,e).
 %on(e,f).
 %on(e,g).
@@ -29,7 +29,7 @@ tasks_starts_ends(Tasks, Starts, Ends) :-
 
 
 create_tasks([],[],[],[]).
-create_tasks([[Time, Persons, Container]|Cons], [Start|Starts], [End|Ends], [task(Start, Time, End, Persons, 1)|Tasks]) :-
+create_tasks([[Time, Persons, Container]|Cons], [Start|Starts], [End|Ends], [task(Start, Time, End, Persons, Container)|Tasks]) :-
 	create_tasks(Cons, Starts, Ends, Tasks).
 
 % returns one task, useful for creating the Starts list for tasks_stars
