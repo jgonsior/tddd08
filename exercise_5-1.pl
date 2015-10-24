@@ -39,14 +39,14 @@ get_a_task(Task, [_|Tasks]) :-
 
 
 run(Tasks, Starts, End) :- 
-	tasks_starts_ends(Tasks, Ss, Es),
+	tasks_starts_ends(Tasks, Starts, Ends),
 	domain(Starts, 1, 30),
-	domain(Es, 1, 50),
+	domain(Ends, 1, 50),
 	domain([End], 1,50),
-	maximum(End, Es),
+	maximum(End, Ends),
 	checkPlan(Tasks, Tasks),
 	cumulative(Tasks, [limit(15)]),
-	append(Ss, [End], Vars),
+	append(Starts, [End], Vars),
 	labeling([minimize(End)], Vars).
 
 % checkPlan(Plan, Plan)
