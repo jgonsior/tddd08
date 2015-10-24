@@ -16,9 +16,10 @@ on(c,d).
 
 % returns a list of tasks and a list of start times
 % possible bug: the list of start times contains different anonymous variables than the start times in the tasks list
-tasks_starts(Tasks, Starts) :-
+tasks_starts_ends(Tasks, Starts, Ends) :-
 	findall(task(_X,Time, _X+Time, Persons,Container), container(Container, Persons, Time), Tasks),
-	findall(_X, get_a_task(task(_X,_,_,_,_),Tasks), Starts).
+	findall(_X, get_a_task(task(_X,_,_,_,_),Tasks), Starts),
+	findall(_X, get_a_task(task(_,_,_X,_,_),Tasks), Ends).
 
 % returns one task, useful for creating the Starts list for tasks_stars
 get_a_task(Task, [Task|Tasks]).
@@ -26,14 +27,16 @@ get_a_task(Task, [_|Tasks]) :-
 	get_a_task(Task, Tasks).
 
 
-run(Tasks, Starts, Limit) :- 
-	tasks_starts(Tasks, Starts),
-	Starts ins 0..100, % Starts #> 3.
-	[Limit] ins 1..100,
+run(Tasks, Starts, End) :- 
+	tasks_starts_ends(Tasks, Ss, Es),
+	domain(Starts, 1, 30),
+	domain(Es, 1, 50),
+	domain([End], 1,50),
+	maximum(End, Es),
 	checkPlan(Tasks, Tasks),
-	once(labeling([min(Limit)],[Limit])),
-	cumulative(Tasks, [limit(Limit)]),
-	label(Starts).
+	cumulative(Tasks, [limit(15)]),
+	append(Ss, [End], Vars),
+	labeling([minimize(End)], Vars).
 
 % checkPlan(Plan, Plan)
 % checks if a plan is possible regarding the container constraints w.r.t. the on/2 relation
@@ -47,7 +50,8 @@ checkPlan([Task|Tasks], TaskList) :-
 
 checkIfOtherContainersUnloaded(task(Time,_,_,_,Container), Tasks) :-
 	onTop(Container, TopContainers),
-	unloadedContainers(Tasks, Time-1, UnloadedContainers),
+	TimeMinusOne is Time -1,
+	unloadedContainers(Tasks, TimeMinusOne, UnloadedContainers),
 	sublist(TopContainers, UnloadedContainers).
 
 
