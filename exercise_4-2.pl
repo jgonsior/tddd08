@@ -41,6 +41,7 @@ possibleState(State):-
     getListMissionaries(State, Missionaries),
     length(Cannibals, LengthCannibals),
     length(Missionaries, LengthMissionaries),
+    not(length(Missionaries, 0)),
     LengthCannibals =< LengthMissionaries.
 
 % Does a list contain an element ?
@@ -49,23 +50,32 @@ contains([Element|Tail], Element).
 contains([Head|Tail], Element):-
     contains(Tail, Element).
 
-% Transport two element from on side to another.
+% Transport two elements from one side to another.
 transport(Departure, Arrival, FirstElement, SecondElement, NewDeparture, [FirstElement, SecondElement | Arrival]):-
     contains(Departure, FirstElement),
-    contains(Departure, SecondElement),
     delete(Departure, FirstElement, TmpDeparture),
+    contains(TmpDeparture, SecondElement),
     delete(TmpDeparture, SecondElement, NewDeparture),
     possibleState(NewDeparture),
     possibleState([FirstElement, SecondElement | Arrival]).
 
+% Transport just one person
+transport(Departure, Arrival, FirstElement, SecondElement, NewDeparture, [FirstElement | Arrival]):-
+    contains(Departure, FirstElement),
+    delete(Departure, FirstElement, NewDeparture),
+    SecondElement="Nobody",
+    possibleState(NewDeparture),
+    possibleState([FirstElement | Arrival]).
+
 % It is finished if there is no one else on the first bank of the river.
 findTravels([], Arrival, Travels, Travels).
 
+% We do a transportation and a return
+
 findTravels(Departure, Arrival, PreviousTravels, TravelsOut):-
-    transport(Departure, Arrival, X, Y, NewDeparture, NewArrival),
-    append(Travels, [X, Y], NewTravels),
-    %TODO Check if this travel is not a loop - i.e. if it does not put us in a state we have already been in
-    transport(NewArrival, NewDeparture, A, B, NewArrival2, NewDeparture2),
-    %TODO Again, check for a loop
-    append(NewTravels, [A,B], NewTravelsReturn),
-    findTravels(NewDeparture2, NewArrival2, NewTravelsReturn, TravelsOut).
+        transport(Departure, Arrival, X, Y, NewDeparture, NewArrival),
+        not(member(PreviousTravels, [[X, Y]])), % We dont want a loop
+        not(member(PreviousTravels, [[Y, X]])),
+        append(PreviousTravels, [[X, Y]], NewTravels),
+        %findTravels(NewArrival, NewDeparture, NewTravelsReturn, TravelsOut).
+        findTravels(NewDeparture, NewArrival, NewTravels, TravelsOut).
