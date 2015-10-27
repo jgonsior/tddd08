@@ -30,6 +30,7 @@ tasks_starts_ends(Tasks, Starts, Ends) :-
 
 create_tasks([],[],[],[]).
 create_tasks([[Time, Persons, Container]|Cons], [Start|Starts], [End|Ends], [task(Start, Time, End, Persons, Container)|Tasks]) :-
+
 	create_tasks(Cons, Starts, Ends, Tasks).
 
 run(Tasks, Starts, End) :- 
@@ -70,36 +71,9 @@ getEndTime(Container, End, [task(_,_,End,_,AnotherContainer)|OriginalTasks]) :-
 
 restrictStartTime(Start, []).
 restrictStartTime(Start, [EndTime|Endtimes]) :-
-	Start #> Endtime,
+	Start #> EndTime,
 	restrictStartTime(Start, Endtimes).
 
-
-% checkPlan(Plan, Plan)
-% checks if a plan is possible regarding the container constraints w.r.t. the on/2 relation
-checkPlan([],_).
-checkPlan([Task|Tasks], TaskList) :-
-	checkIfOtherContainersUnloaded(Task, TaskList),
-	checkPlan(Tasks, TaskList).
-
-% checkIfOtherContainersUnloaded(Task, Tasks)
-% needs to check, if at the timeStamp at which this one container wants to be unloaded all other container that are on top of him are already unloaded
-
-checkIfOtherContainersUnloaded(task(Time,_,_,_,Container), Tasks) :-
-	onTop(Container, TopContainers),
-	TimeMinusOne is Time -1,
-	unloadedContainers(Tasks, TimeMinusOne, UnloadedContainers),
-	sublist(TopContainers, UnloadedContainers).
-
-
-% UnloadedContainers is a list of the container ids that are unloaded at the timestamp Time
-unloadedContainers(Tasks, Time, UnloadedContainers) :-
-	findall(Container, unloaded(Tasks, Container, Time), UnloadedContainers).
-
-unloaded([task(_, _, Endtime, _,Container)| Tasks], Container, Timestamp) :-
-	Timestamp >=Endtime.
-
-unloaded([task(_, _, Endtime, _,_)| Tasks], Container, Timestamp) :-
-	unloaded(Tasks, Container, Timestamp).
 
 % returns a list of Containers that are on top of a Container
 onTop(Container, []) :-
@@ -120,9 +94,3 @@ onTop2([Container|TopContainerRest], Result) :-
 	onTop2(TopContainerRest, Result3),
 	append(Result2, Result3, Result).
 
-
-% sublist(List1, List2) true if every element from List1 is contained in List2
-sublist([], _).
-sublist([X|Xs], List2) :-
-	member(X, List2),
-	sublist(Xs, List2).
