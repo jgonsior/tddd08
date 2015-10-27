@@ -8,8 +8,8 @@ container(40,1,1).
 
 % on(A,B) container A is on B
 on(10,40).
-on(20,30).
-on(30,40).
+%on(20,30).
+%on(30,40).
 %on(d,e).
 %on(e,f).
 %on(e,g).
@@ -30,7 +30,6 @@ tasks_starts_ends(Tasks, Starts, Ends) :-
 
 create_tasks([],[],[],[]).
 create_tasks([[Time, Persons, Container]|Cons], [Start|Starts], [End|Ends], [task(Start, Time, End, Persons, Container)|Tasks]) :-
-
 	create_tasks(Cons, Starts, Ends, Tasks).
 
 run(Tasks, Starts, End) :- 
@@ -38,6 +37,7 @@ run(Tasks, Starts, End) :-
 	domain(Starts, 1, 300),
 	domain(Ends, 1, 500),
 	domain([End], 1,500),
+	restrictEndTimesAccordingToDuration(Tasks),
 	restrictTasks(Tasks, Tasks),
 	maximum(End, Ends),
 	cumulative(Tasks, [limit(150)]),
@@ -45,34 +45,40 @@ run(Tasks, Starts, End) :-
 	labeling([minimize(End)], Vars).
 
 
+restrictEndTimesAccordingToDuration([]).
+restrictEndTimesAccordingToDuration([task(Start,Time,End,_,_)|Tasks]) :-
+	End #= Start+Time,
+	restrictEndTimesAccordingToDuration(Tasks).
+
+
 % restrict the start times w.r.t. to the on top constraint
 restrictTasks([],_).
 restrictTasks([task(Start, Time, End, _, Container)|Tasks], OriginalTasks) :-
 	%start time of this task needs to be before end time of containers on which this one task is on top
 	onTop(Container, TopContainers),
-	getEndTimes(TopContainers, EndTimes, OriginalTasks),
-	restrictStartTime(Start, EndTimes),
+	getStartTimes(TopContainers, StartTimes, OriginalTasks),
+	restrictEndTime(End, StartTimes),
 	restrictTasks(Tasks, OriginalTasks).
 
-%returns a list of the endTimes for the containers from the first argument
-getEndTimes([],[],_).
-getEndTimes([Container|TopContainers], EndTimes, OriginalTasks) :-
+%returns a list of the startTimes for the containers from the first argument
+getStartTimes([],[],_).
+getStartTimes([Container|TopContainers], StartTimes, OriginalTasks) :-
 	%find Container in OriginalTasks
-	getEndTime(Container, End, OriginalTasks),
-	getEndTimes(TopContainers, EndTimes2, OriginalTasks),
-	append([End], EndTimes2, EndTimes).
+	getStartTime(Container, Start, OriginalTasks),
+	getStartTimes(TopContainers, StartTimes2, OriginalTasks),
+	append([Start], StartTimes2, StartTimes).
 
 
 %returns the end time for one container
-getEndTime(Container, End, [task(_,_,End,_,Container) | OriginalTasks]).
-getEndTime(Container, End, [task(_,_,End,_,AnotherContainer)|OriginalTasks]) :-
+getStartTime(Container, Start, [task(Start,_,_,_,Container) | OriginalTasks]).
+getStartTime(Container, Start, [task(Start,_,_,_,AnotherContainer)|OriginalTasks]) :-
 	Container \= AnotherContainer,
-	getEndTime(Container, End, OriginalTasks).
+	getStartTime(Container, Start, OriginalTasks).
 
-restrictStartTime(Start, []).
-restrictStartTime(Start, [EndTime|Endtimes]) :-
-	Start #> EndTime,
-	restrictStartTime(Start, Endtimes).
+restrictEndTime(End, []).
+restrictEndTime(End, [StartTime|StartTimes]) :-
+	End #< StartTime,
+	restrictStartTime(End, StatrTimes).
 
 
 % returns a list of Containers that are on top of a Container
