@@ -15,7 +15,7 @@ can_move(0,1).
 changeDirection(go, return, -1).
 changeDirection(return, go, 1).
 
-% Valid states
+% Valid states : conditions on the number of missionaries and cannibals.
 valid_state(NumberMissionaries, NumberCannibals):-
     NumberMissionaries >= NumberCannibals,
     0 < NumberMissionaries,
@@ -23,6 +23,7 @@ valid_state(NumberMissionaries, NumberCannibals):-
 valid_state(0, NumberCannibals):-NumberCannibals>=0.
 valid_state(NumberMissionaries, 0):-0<NumberMissionaries.
 
+% Move cannibals and / or missionaries from one side to the other.
 move((MissionariesFirstSideInitial,CannibalsFirstSideInitial, DirectionInitial, MissionariesSecondSideInitial,CannibalsSecondSideInitial),
     (MissionariesFirstSideNew, CannibalsFirstSideNew, DirectionNew, MissionariesSecondSideNew,CannibalsSecondSideNew)) :-
 
@@ -32,7 +33,7 @@ move((MissionariesFirstSideInitial,CannibalsFirstSideInitial, DirectionInitial, 
     % Is this possible in the boat ?
     can_move(MoveMissionaries, MoveCannibals),
 
-    % Proceed
+    % Proceed : compute the new numbers of cannibals and missionaries on each sides.
     MissionariesFirstSideNew is MissionariesFirstSideInitial + MoveMissionaries * Sign,
     CannibalsFirstSideNew is CannibalsFirstSideInitial + MoveCannibals * Sign,
     % The sign is the opposite for the second side
@@ -45,6 +46,8 @@ move((MissionariesFirstSideInitial,CannibalsFirstSideInitial, DirectionInitial, 
 
 
 %%%% Search methods
+
+% print a solution
 printpath([]).
 printpath([Head | Tail]):-
     writeln(Head),
@@ -61,6 +64,7 @@ dfs(S, RPath, Path) :-
     final(S),
     reverse(RPath, Path).
 
+% DFS algorithm.
 dfs(S, Path, FinalPath) :-
     move(S, T), % Try a new move
     not(member(T, Path)), % Avoid any loops
@@ -72,6 +76,7 @@ solve_with_bfs :-
     bfs2([[InitialState]], Path),
     printpath(Path).
 
+% We found a solution, so we display it.
 bfs2(Paths, Path) :-
     extend(Paths, Extended),
     member(ReversePath, Extended),
@@ -79,6 +84,7 @@ bfs2(Paths, Path) :-
     final(H),
     reverse(ReversePath, Path).
 
+% Otherwise we keep looking : we extend the graph and look at the next level.
 bfs2(Paths, Path) :-
     extend(Paths, Extended),
     bfs2(Extended, Path).
