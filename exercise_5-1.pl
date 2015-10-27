@@ -27,7 +27,8 @@ tasks_starts_ends(Tasks, Starts, Ends) :-
 	%create tasks
 	create_tasks(Cons, Starts, Ends, Tasks).
 
-
+%create_tasks(Containers, StartTime, EndTimes, ResultingTaskList)
+%add a new clpfd task() to the resulting list
 create_tasks([],[],[],[]).
 create_tasks([[Time, Persons, Container]|Cons], [Start|Starts], [End|Ends], [task(Start, Time, End, Persons, Container)|Tasks]) :-
 	create_tasks(Cons, Starts, Ends, Tasks).
@@ -44,7 +45,7 @@ run(Tasks, Starts, Ends, End) :-
 	append(Starts, [End], Vars),
 	labeling([minimize(End)], Vars).
 
-
+% add constraint for EndTime = StartTime + Duration of Task
 restrictEndTimesAccordingToDuration([]).
 restrictEndTimesAccordingToDuration([task(Start,Time,End,_,_)|Tasks]) :-
 	End #= Start+Time,

@@ -1,3 +1,0 @@
-#Number of person who like ulrika :
-?- findall(X, like(X, ulrika), Xs), length(Xs, L).
-

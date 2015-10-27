@@ -10,7 +10,8 @@ insertProperPlace(E, [C|I], [C|P]):-
     C<E,
     insertProperPlace(E, I, P).
 
-
+%isort(X,Y)
+%Y is the sortey lits X, sortey with insertion sort
 isort([], []).
 
 isort([F|I], O):-
@@ -18,7 +19,8 @@ isort([F|I], O):-
     insertProperPlace(F, S, O). % insert the first element
 
 
-% Is it working ?
+% partition(Threshold, X,Y,Z)
+% partition the list X into a list with all elements smaller than Thershold (Y) and a list with greater elements(Z)
 partition(Threshold, [], [], []).
 
 partition(Threshold, [FirstElement|List], Smaller, [FirstElement|Greater]):-
@@ -29,7 +31,7 @@ partition(Threshold, [FirstElement|List], [FirstElement|Smaller], Greater):-
         Threshold>=FirstElement,
         partition(Threshold, List, Smaller, Greater).
 
-
+%qsort(X,Y) sorts X accordings to quicksort
 qsort([], []).
 
 qsort(Input, O):-

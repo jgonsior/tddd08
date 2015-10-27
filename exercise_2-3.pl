@@ -26,7 +26,6 @@ evaluate(InitialMemory, if(X, Y, Z), OutputMemory) :-
 	evaluate_boolean_expression(InitialMemory, X, XBool),
 	evaluate(InitialMemory, if(XBool, Y, Z), OutputMemory).
 
-%TODO while is not working - The rest seems to be fine
 evaluate(InitialMemory, while(X, Y), OutputMemory) :-
 	evaluate_boolean_expression(InitialMemory, X, true),
 	evaluate(InitialMemory, Y, OutputMemory2),

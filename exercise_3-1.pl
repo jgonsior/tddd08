@@ -3,6 +3,7 @@
 :-include('scanner.pl').
 :-include('exercise_2-3.pl').
 
+%DCG according to lab instructions
 pgm(X) --> cmd(X).
 pgm(seq(A,B)) --> cmd(A), [;], pgm(B).
 
@@ -29,6 +30,7 @@ term(X) --> numb(X).
 
 ident(id(X)) --> [id(X)], {atom(X)}.
 numb(num(X)) --> [num(X)], {number(X)}.
+
 
 
 run(In, String, Out) :-
