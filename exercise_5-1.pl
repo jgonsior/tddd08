@@ -1,15 +1,15 @@
 :- use_module(library(clpfd)).
 
 % container(B,M,D) Container B needs M persons to be unloaded, and the unloading takes D amount of time
-container(10,2,2).
+%container(10,2,2).
 container(20,4,1).
 container(30,2,2).
 container(40,1,1).
 
 % on(A,B) container A is on B
-on(10,40).
-%on(20,30).
-%on(30,40).
+%on(10,40).
+on(20,30).
+on(30,40).
 %on(d,e).
 %on(e,f).
 %on(e,g).
@@ -32,7 +32,7 @@ create_tasks([],[],[],[]).
 create_tasks([[Time, Persons, Container]|Cons], [Start|Starts], [End|Ends], [task(Start, Time, End, Persons, Container)|Tasks]) :-
 	create_tasks(Cons, Starts, Ends, Tasks).
 
-run(Tasks, Starts, End) :- 
+run(Tasks, Starts, Ends, End) :- 
 	tasks_starts_ends(Tasks, Starts, Ends),
 	domain(Starts, 1, 300),
 	domain(Ends, 1, 500),
@@ -78,7 +78,7 @@ getStartTime(Container, Start, [task(Start,_,_,_,AnotherContainer)|OriginalTasks
 restrictEndTime(End, []).
 restrictEndTime(End, [StartTime|StartTimes]) :-
 	End #< StartTime,
-	restrictEndTime(End, StatrTimes).
+	restrictEndTime(End, StartTimes).
 
 
 % returns a list of Containers that are on top of a Container
@@ -99,4 +99,3 @@ onTop2([Container|TopContainerRest], Result) :-
 	onTop(Container, Result2),
 	onTop2(TopContainerRest, Result3),
 	append(Result2, Result3, Result).
-
