@@ -54,7 +54,6 @@ printpath([Head | Tail]):-
 solve_with_dfs :-
     initial(InitialState),
     dfs(InitialState, [InitialState], Path),
-    %maplist(writeln, Path), nl.
     printpath(Path).
 
 % Finished - reverse the list to print it
@@ -66,3 +65,29 @@ dfs(S, Path, FinalPath) :-
     move(S, T), % Try a new move
     not(member(T, Path)), % Avoid any loops
     dfs(T, [T|Path], FinalPath). % Continue until it fails / succeeds
+
+% Starting point - call me to solve with bfs !
+solve_with_bfs :-
+    initial(InitialState),
+    bfs2([[InitialState]], Path),
+    printpath(Path).
+
+bfs2(Paths, Path) :-
+    extend(Paths, Extended),
+    member(ReversePath, Extended),
+    ReversePath = [H|_],
+    final(H),
+    reverse(ReversePath, Path).
+
+bfs2(Paths, Path) :-
+    extend(Paths, Extended),
+    bfs2(Extended, Path).
+
+% From all the paths at a certain level n, find all the possibles moves to a level level n+1
+extend(Paths, Extended) :-
+    findall([NewState,ActualState|R],
+        (   member([ActualState|R], Paths), % Get all the states at a level n
+            move(ActualState, NewState), % Get all possible moves
+            not((member(NewState, R))) % Add it only once
+        ), Extended),
+    Extended \= []. % Not empty
