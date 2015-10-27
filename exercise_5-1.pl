@@ -78,7 +78,7 @@ getStartTime(Container, Start, [task(Start,_,_,_,AnotherContainer)|OriginalTasks
 restrictEndTime(End, []).
 restrictEndTime(End, [StartTime|StartTimes]) :-
 	End #< StartTime,
-	restrictStartTime(End, StatrTimes).
+	restrictEndTime(End, StatrTimes).
 
 
 % returns a list of Containers that are on top of a Container
