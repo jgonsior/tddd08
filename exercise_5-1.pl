@@ -7,14 +7,10 @@ container(30,2,2).
 container(40,1,1).
 
 % on(A,B) container A is on B
-%on(10,40).
+on(10,40).
 on(20,30).
 on(30,40).
-%on(d,e).
-%on(e,f).
-%on(e,g).
 
-% returns a list of tasks and a list of start times
 tasks_starts_ends(Tasks, Starts, Ends) :-
 	%list of containers
 	findall([Time, Persons,Container], container(Container, Persons, Time), Cons),
@@ -88,7 +84,7 @@ onTop(Container, []) :-
 	\+ on(_,Container).
 
 onTop(Container, TopContainers) :-
-	on(_,Container), % bug: matches multiple times -> the same result is being returned twice or more times
+	on(_,Container), 
 	findall(X, on(X,Container), TopContainers1),
 	%transitivity -> call onTop again for all containers from TopContainers1
 	onTop2(TopContainers1, TopContainers2),

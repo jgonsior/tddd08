@@ -42,9 +42,11 @@ parse(Tokens,AbstStx) :-
 	pgm(AbstStx,Tokens, []).
 
 
-/* run it with:
-run([[id(x),num(3)]],
-"y:=1; z:=0; while x>z do z:=z+1; y:=y*z od",
-Res).
+/* result:
+
+?- run([[id(x),num(3)]],
+|    "y:=1; z:=0; while x>z do z:=z+1; y:=y*z od",
+|    Res).
+Res = [[id(x), num(3)], [id(y), num(6)], [id(z), num(3)]]
 
 */
