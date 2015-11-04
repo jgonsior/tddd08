@@ -29,17 +29,29 @@ create_tasks([],[],[],[]).
 create_tasks([[Time, Persons, Container]|Cons], [Start|Starts], [End|Ends], [task(Start, Time, End, Persons, Container)|Tasks]) :-
 	create_tasks(Cons, Starts, Ends, Tasks).
 
-run(Tasks, Starts, Ends, End) :- 
+run(Tasks, Starts, Ends,Limit)  :- 
 	tasks_starts_ends(Tasks, Starts, Ends),
 	domain(Starts, 1, 300),
 	domain(Ends, 1, 500),
 	domain([End], 1,500),
+	domain([Limit], 1, 150),
 	restrictEndTimesAccordingToDuration(Tasks),
 	restrictTasks(Tasks, Tasks),
-	maximum(End, Ends),
-	cumulative(Tasks, [limit(150)]),
-	append(Starts, [End], Vars),
-	labeling([minimize(End)], Vars).
+	%minimum(Start, Starts),
+	cumulative(Tasks, [limit(Limit)]),
+	getBiggestEnd(Ends,End),
+	Cost #= Limit*End, % limit is the number of workers * last End Time
+	append(Starts, [Cost], Vars),
+	labeling([minimize(Cost)], [Cost|Vars]).
+
+getBiggestEnd([End], End).
+getBiggestEnd([End|Ends], End) :-  
+	getBiggestEnd(Ends, End2),
+	End >= End2.
+getBiggestEnd([End2|Ends], End) :-
+	getBiggestEnd(Ends, End),
+	End > End2.		
+
 
 % add constraint for EndTime = StartTime + Duration of Task
 restrictEndTimesAccordingToDuration([]).
