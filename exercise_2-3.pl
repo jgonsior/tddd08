@@ -87,7 +87,8 @@ evaluate_boolean_expression(Memory, X>Y, false):-
 		evaluate_arithmetic_expression(Memory, Y, num(Ys)),
 	not(Xs>Ys).
 
-% Test in the lab instructions :
-%evaluate([[x,3]], seq(set(id(y),1), while(id(x) > 1, seq(set(id(y), id(y) * id(x)), set(id(x), id(x) - 1)))), Out).
-% Without id
-%evaluate([[x,3]], seq(set(y,1), while(x > 1, seq(set(y, y * x), set(x, x - 1)))), Out
+% run:
+% ?- evaluate([[id(x),num(3)]], seq(set(id(y),num(1)), while(id(x) > num(1), seq(set(id(y), id(y) * id(x)), set(id(x),     id(x) - num(1))))), Out).
+% Out = [[id(x), num(1)], [id(y), num(6)]] .
+% )))]
+
