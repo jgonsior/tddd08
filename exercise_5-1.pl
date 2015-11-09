@@ -1,15 +1,15 @@
 :- use_module(library(clpfd)).
 
 % container(B,M,D) Container B needs M persons to be unloaded, and the unloading takes D amount of time
-%container(10,2,2).
+container(10,2,2).
 container(20,4,1).
 container(30,2,2).
 container(40,1,1).
 
-% on(A,B) container A is on B
-on(10,40).
-on(20,30).
-on(30,40).
+% on(A,B) container B is on A
+on(40,10).
+on(30,20).
+on(40,30).
 
 tasks_starts_ends(Tasks, Starts, Ends) :-
 	%list of containers
@@ -29,7 +29,7 @@ create_tasks([],[],[],[]).
 create_tasks([[Time, Persons, Container]|Cons], [Start|Starts], [End|Ends], [task(Start, Time, End, Persons, Container)|Tasks]) :-
 	create_tasks(Cons, Starts, Ends, Tasks).
 
-run(Tasks, Starts, Ends,Limit)  :- 
+run(Tasks, Starts, Ends,Cost)  :- 
 	tasks_starts_ends(Tasks, Starts, Ends),
 	domain(Starts, 1, 300),
 	domain(Ends, 1, 500),
@@ -39,7 +39,7 @@ run(Tasks, Starts, Ends,Limit)  :-
 	restrictTasks(Tasks, Tasks),
 	minimum(Start, Starts),
 	cumulative(Tasks, [limit(Limit)]),
-	getBiggestEnd(Ends,End),
+	%getBiggestEnd(Ends,End),
 	Cost #= Limit*End, % limit is the number of workers * last End Time
 	append(Starts, [Cost], Vars),
 	labeling([minimize(Cost)], Vars).
