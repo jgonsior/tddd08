@@ -37,12 +37,12 @@ run(Tasks, Starts, Ends,Limit)  :-
 	domain([Limit], 1, 150),
 	restrictEndTimesAccordingToDuration(Tasks),
 	restrictTasks(Tasks, Tasks),
-	%minimum(Start, Starts),
+	minimum(Start, Starts),
 	cumulative(Tasks, [limit(Limit)]),
 	getBiggestEnd(Ends,End),
 	Cost #= Limit*End, % limit is the number of workers * last End Time
 	append(Starts, [Cost], Vars),
-	labeling([minimize(Cost)], [Cost|Vars]).
+	labeling([minimize(Cost)], Vars).
 
 getBiggestEnd([End], End).
 getBiggestEnd([End|Ends], End) :-  
@@ -80,8 +80,8 @@ getStartTimes([Container|TopContainers], StartTimes, OriginalTasks) :-
 
 %returns the end time for one container
 getStartTime(Container, Start, [task(Start,_,_,_,Container) | OriginalTasks]).
-getStartTime(Container, Start, [task(Start,_,_,_,AnotherContainer)|OriginalTasks]) :-
-	Container \= AnotherContainer,
+getStartTime(Container, Start, [task(_,_,_,_,AnotherContainer)|OriginalTasks]) :-
+	%Container \= AnotherContainer,
 	getStartTime(Container, Start, OriginalTasks).
 
 restrictEndTime(End, []).
