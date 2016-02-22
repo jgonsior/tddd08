@@ -37,10 +37,10 @@ run(Tasks, Starts, Ends,Cost)  :-
 	domain([Limit], 1, 150),
 	restrictEndTimesAccordingToDuration(Tasks),
 	restrictTasks(Tasks, Tasks),
-	Cost #= Limit*End, % limit is the number of workers * last End Time
-	minimum(Cost, 1..1000),
+	minimum(Start, Starts),
 	cumulative(Tasks, [limit(Limit)]),
 	%getBiggestEnd(Ends,End),
+	Cost #= Limit*End, % limit is the number of workers * last End Time
 	append(Starts, [Cost], Vars),
 	labeling([minimize(Cost)], Vars).
 
