@@ -29,7 +29,7 @@ create_tasks([],[],[],[]).
 create_tasks([[Time, Persons, Container]|Cons], [Start|Starts], [End|Ends], [task(Start, Time, End, Persons, Container)|Tasks]) :-
 	create_tasks(Cons, Starts, Ends, Tasks).
 
-run(Tasks, Starts, Ends,Cost)  :- 
+run(Tasks, Starts, Ends,Cost, L,E)  :- 
 	tasks_starts_ends(Tasks, Starts, Ends),
 	domain(Starts, 1, 300),
 	domain(Ends, 1, 500),
