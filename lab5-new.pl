@@ -1,126 +1,73 @@
+:- use_module(library(clpfd)).
+
 container(a, 2, 2).
 container(b, 4, 1).
 container(c, 2, 2).
 container(d, 1, 1).
-container(e, 2, 2).
-container(f, 4, 1).
-container(g, 2, 2).
-container(h, 1, 1).
 
 on(a, d).
 on(b, c).
 on(c, d).
-on(e, a).
-on(f, e).
-on(f, b).
-on(g, f).
-on(h, g).
 
-blegah([], [], []).
-blegah([container(N, W, D)|Tail], [task(S, D, E, W, N)|Ts], [S|Rs]):-
-	E #= S + D,
-	blegah(Tail, Ts, Rs).
+tasks([task(S1, D1, _, _, N1) | _], N1, task(S1, D1, _, _, N1)).
+tasks([task(_, _, _, _, _N1) | Tasks], N, X):-
+	tasks(Tasks, N, X).
 
-containers_start(Tasks, Ss):-
-	findall(container(A,B,C), container(A,B,C), Containers),
-	blegah(Containers, Tasks, Ss).
+%find all tasks
+tasks_starts_end(Tasks, StartTimes):-
+	findall(container(Container,Persons,Time), container(Container,Persons,Time), Containers),
+	restrictEndTimesAccordingToDuration(Containers, Tasks, StartTimes).
 
-total_workers([], 0).
-total_workers([task(_, _, _, W, _) | CTail], R):-
-	total_workers(CTail, N),
-	R is N+W.
+run(Cost):-
+	tasks_starts_end(Containers, StartTimes),
+	countTime(Containers, TotalTime),
+	StartTimes ins 0..TotalTime,
+	countWorkers(Containers, TotalWorkers),
+	MaxWorkers in 1..TotalWorkers,
+	End in 0..TotalTime,
+	restrictEndTime(Containers, End),
+	restrictWorkers(Containers, MaxWorkers),
 
-sum_durations([], 0).
-sum_durations([task(_, D, _, _, _) | CTail], R):-
-	sum_durations(CTail, N),
-	R is N+D.
+	findall(on(A,B), on(A,B), TopContainers),
+	restrictStartTimes(Containers, TopContainers),
 
-minimize_total_time([], _).
-minimize_total_time([task(ST, D, _, _, _) | CTail], TD):-
-	TD #>= ST + D,
-	minimize_total_time(CTail, TD).
+	% calculate cost! 
+	Cost #= End * MaxWorkers,
+   	cumulative(Containers, [limit(TotalWorkers)]), 
+   	labeling([min(Cost)], [Cost| StartTimes]).
 
 
-find_task([task(S1, D1, _, _, N1) | _], N1, task(S1, D1, _, _, N1)).
-find_task([task(_, _, _, _, _N1) | CTail], N, X):-
-	find_task(CTail, N, X).
+%add constraint for EndTime = StartTime + Duration of Task
+restrictEndTimesAccordingToDuration([], [], []).
+restrictEndTimesAccordingToDuration([container(N, W, Time)|OtherContainers], [task(Start, Time, End, W, N)|Tasks], [Start|StartTimes]):-
+	End #= Start+Time,
+	restrictEndTimesAccordingToDuration(OtherContainers, Tasks, StartTimes).
 
-respect_order(_, []).
-respect_order(Containers, [on(N1, N2) | OTail]):-
-	find_task(Containers, N1, task(ST1, D1, _, _, N1)),
-	find_task(Containers, N2, task(ST2, _, _, _, N2)),
-	ST2 #>= ST1+D1,
-	respect_order(Containers, OTail).
-
-
-limit_workers([], _).
-limit_workers([task(_, _, _, R, _) | CTail], MaxWorkers):-
-	MaxWorkers #>= R,
-	limit_workers(CTail, MaxWorkers).
-
-work(Cost):-
-	containers_start(Containers, Vars),
-
-	% Get domain for each duration.
-	% Calculate worst case scenario by summing all durations
-	sum_durations(Containers, D),
-	Vars ins 0..D,
-
-	% Get domain for number of workers 
-	total_workers(Containers, W),
-	MaxWorkers in 1..W,
-
-	% Restrain TD
-	TD in 0..D,
-	minimize_total_time(Containers, TD),
-
-	% Restrain MaxWorkers
-	limit_workers(Containers, MaxWorkers),
-
-	findall(on(A,B), on(A,B), Ons),
-	respect_order(Containers, Ons),
-
-	% Get max_duration
-	Cost #= TD * MaxWorkers,
-
-	% to guarantee optimality we should have the following line:
-	% cumulative(Containers, [limit(MaxWorkers)]), 
-	% But this doesn't work in swi-prolog, so instead we use:
-   	cumulative(Containers, [limit(W)]), 
-   	% Only works on swi-prolog
-   	labeling([min(Cost)], [Cost| Vars]).
-   	
+restrictEndTime([], _).
+restrictEndTime([task(Start, Time, _, _, _) | Tasks], End):-
+	End #>= Start + Time,
+	restrictEndTime(Tasks, End).
 
 
-% Examples:
-% container(a, 2, 2).
-% container(b, 4, 1).
-% container(c, 2, 2).
-% container(d, 1, 1).
+countWorkers([], 0).
+countWorkers([task(_, _, _, Persons, _) | Tasks], TotalWorkers):-
+	countWorkers(Tasks, N),
+	TotalWorkers is N+Persons.
 
-% on(a, d).
-% on(b, c).
-% on(c, d).
-% ?- work(Cost).
-% Cost = 16 .
+countTime([], 0).
+countTime([task(_, Time, _, _, _) | Tasks], TotalTime):-
+	countTime(Tasks, N),
+	TotalTime is N+Time.
 
-% container(a, 2, 2).
-% container(b, 4, 1).
-% container(c, 2, 2).
-% container(d, 1, 1).
-% container(e, 2, 2).
-% container(f, 4, 1).
-% container(g, 2, 2).
-% container(h, 1, 1).
+restrictStartTimes(_, []).
+restrictStartTimes(Containers, [on(Container1, Container2) | TopContainers]):-
+	tasks(Containers, Container1, task(Start1, Time1, _, _, Container1)),
+	tasks(Containers, Container2, task(Start2, _, _, _, Container2)),
+	Start2 #>= Start1+Time1,
+	restrictStartTimes(Containers, TopContainers).
 
-% on(a, d).
-% on(b, c).
-% on(c, d).
-% on(e, a).
-% on(f, e).
-% on(f, b).
-% on(g, f).
-% on(h, g).
 
-% ?- work(Cost).
-% Cost = 36 
+restrictWorkers([], _).
+restrictWorkers([task(_, _, _, Persons, _) | Tasks], MaxWorkers):-
+	MaxWorkers #>= Persons,
+	restrictWorkers(Tasks, MaxWorkers).
